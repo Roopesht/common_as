@@ -1,0 +1,18 @@
+[project]
+name = "common_as"
+version = "1.1.0"
+authors = [
+  { name="Arthasangraha", email="roopesh@arthasangraha.com" },
+]
+description = "The common files used in the Arthasangraha project suite"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/Roopesht/as_algo_trading"
+"Bug Tracker" = "https://github.com/Roopesht/as_algo_trading/issues"
