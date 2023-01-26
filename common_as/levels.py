@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
-from calculate_ta import CalcData
+from common_as.calculate_ta import CalcData
 #import copy
 
 class ORDER_STATUS:
@@ -108,26 +108,24 @@ class Position:
         """
 
 class Order :
-    exchangeToken=0
-    strategyid=0
-    code = 0
+    exchangeToken: int=0
+    strategyid: int=0
+    code: int = 0
     orderid=0
     symbol=''
-    token=0
+    token: int=0
     buysell=''
-    qty=0
-    pending_qty=0
-    price=0
-    trigger_price=0
+    qty: int=0
+    pending_qty: int=0
+    price: float=0
+    trigger_price: float=0
     at_time=None
     ordtype =''
     status=''
 
-    def __init__(self, symbol, exchangeToken, buysell, qty, price, comments, at_time=None,  ordtype='', trigger_price=0, strategyid=0, code=0):
+    def __init__(self, code, buysell, qty, price, comments, at_time=None,  ordtype='', trigger_price=0, strategyid=0, exchangeToken=0, symbol=''):
         self.init_time=datetime.now()
-        self.symbol=symbol
-        self.exchangeToken=exchangeToken
-        self.token=exchangeToken
+        self.code = code
         self.buysell=buysell
         self.qty=qty
         self.price=price
@@ -140,6 +138,10 @@ class Order :
             self.at_time=datetime.now()
         else:
             self.at_time=at_time
+        self.symbol=symbol
+        self.exchangeToken=exchangeToken
+        self.token=exchangeToken
+
     def to_string(self):
         return f'symbol: {self.symbol}, token: {self.token}, qty: {self.qty}, code: {self.code}, b/s: {self.buysell}'
 
@@ -336,3 +338,28 @@ class Values:
             return True
         else:
             return False
+
+class Vitals:
+
+    underlying = 0
+    pcr = 0
+    maxpain = 0
+    trend_1m = None
+    trend_5m = None
+    trend_15m = None
+
+    pcr_trend = None
+    maxpain_trend = None
+
+class Strength:
+    weak=1
+    normal=2
+    strong = 3
+
+class Risk:
+    High=3
+    Low = 1
+    Normal=2
+
+class Candle:
+    ubb,lbb, ema20 = 0,0,0

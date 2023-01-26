@@ -1,10 +1,6 @@
 import talib as ta
 import pandas as pd
-#import dbmysql as db
 import numpy as np
-#from SQLBuild import insert, update, connection
-#from datetime import datetime #, timedelta
-#import fileutil
 class CalcData():
     def __init__(self, freq, symbol, dt=None, epoch=None):
         self.fCLOSE = "close"
