@@ -4,6 +4,12 @@ import time
 
 def addSeconds(dt, seconds):
     return dt + timedelta(seconds=seconds)
+
+def get_time_id(dt):
+    return dt.hour * 60 + dt.minute 
+
+def longstr_to_date(s) :
+    return datetime.strptime(s, '%d-%b-%Y %H:%M:%S')
     
 def getTime():
     atime = datetime.now()
@@ -42,13 +48,4 @@ def get_nextday_of_week(dt, weekday:int):
     if days_ahead <= 0: # Target day already happened this week
         days_ahead += 7
     return dt + timedelta(days_ahead)
-
-if __name__ == '__main__':
-    # test
-    dt = datetime(2023, 1, 1).date() #Sunday
-
-    print(dt, get_nextday_of_week(dt, 4)) #Get next thursday
-
-
-
 

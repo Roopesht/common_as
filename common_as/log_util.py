@@ -4,12 +4,14 @@ Logging utility,
 """
 from cfg.config import Config
 import logging.config
-#logging.config.fileConfig ('config/logging.ini', disable_existing_loggers=True)
+import os
+#logging.config.fileConfig ('cfg/logging.ini', disable_existing_loggers=True)
 #logger = logging.getLogger()
 #def getLogger(name):
 #    return logging.getLogger(name)
 import logging
-logging.basicConfig(filename='app.log', level=logging.INFO, filemode='a', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt="%Y-%m-%d-%H:%M:%S")
+#logging.basicConfig(filename='app.log', level=logging.INFO, filemode='a', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt="%Y-%m-%d-%H:%M:%S")
+logging.basicConfig(filename=os.environ["downloader"]+'\\log\\app.log', level=logging.INFO, filemode='a', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt="%Y-%m-%d-%H:%M:%S")
 
 def info(msg):
     logging.info (msg)

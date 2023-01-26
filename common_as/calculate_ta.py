@@ -1,23 +1,38 @@
 import talib as ta
 import pandas as pd
+#import dbmysql as db
 import numpy as np
+from common_as.levels import Trend
+#from SQLBuild import insert, update, connection
+#from datetime import datetime #, timedelta
 class CalcData():
-    def __init__(self, freq, symbol, dt=None, epoch=None):
+    def __init__(self, freq=None, symbol=None, dt=None, epoch=None):
         self.fCLOSE = "close"
         self.fOPEN = "open"
         self.fHIGH = "high"
         self.fLOW = "low"
         self.fVOLUME = "volume"
-        self.freq = freq
-        self.symbol = symbol
+        #self.freq = freq
+        #self.symbol = symbol
         #self.dt = dt
         #self.epoch = epoch
         #self.setTable()
+    
+    def getangle(self, series, period):
+
+        upper = series.max()
+        lower = series.min()
+        new_series = np.array([(i-lower)/(upper-lower)*100 for i in series])
+        new_ema = ta.EMA(new_series, timeperiod=period).round(1)
+        return ta.LINEARREG_ANGLE(new_ema, timeperiod=2).round(0)
+
 
     def CalculateEMA(self, df):
-        #df["highlow"] =(df[self.fHIGH] + df[self.fLOW])/2
-        #close_vals = df[self.fCLOSE].values.astype('float64')
+        
         close_vals = np.array(df[self.fCLOSE].values.astype('float64'), dtype=float)
+        #remove None in close_vals
+
+
         #high_vals  = np.array(df[self.fHIGH].values.astype('float64'), dtype=float)
         #low_vals  = np.array(df[self.fHIGH].values.astype('float64'), dtype=float)
         
@@ -29,7 +44,7 @@ class CalcData():
         lower = df.groupby('date')["close"].transform('min')
         new_close_vals = (close_vals - lower)/(upper-lower)*100
         '''
-        df["RSI"] = ta.RSI(close_vals)
+        df["RSI"] = ta.RSI(close_vals).round(1)
 
         #upper = close_vals * 1.0075
         #lower = close_vals * .9925
@@ -50,8 +65,12 @@ class CalcData():
         df["ema50"] = ta.EMA(close_vals, timeperiod=50).round(0)
         df["ema100"] = ta.EMA(close_vals, timeperiod=100).round(0)
         df["ema200"] = ta.EMA(close_vals, timeperiod=200).round(0)
+
         df["ubb"], df["sma20"], df["lbb"] = ta.BBANDS(df[self.fCLOSE].values,matype=ta.MA_Type.SMA, timeperiod=20)
-        df=df.round(1)        
+        df["ubb"] = df["ubb"].round(1)
+        df["sma20"] = df["sma20"].round(1)
+        df["lbb"] = df["lbb"].round(1)
+        df['trend'] = df.apply(lambda x: self.angletoTrend(x['slope_ema20']), axis=1)
         return df
 
     def CalculateCPR(self, df):
@@ -86,7 +105,7 @@ class CalcData():
         df["EMA20"] = ta.EMA(df[self.fCLOSE].values, timeperiod=20)
         df["QUICKEMA"] = ta.EMA(df[self.fCLOSE].values, timeperiod=7)
         df["trendangle"] = ta.LINEARREG_ANGLE(df[self.fCLOSE].values, timeperiod=7)
-        df['trend'] = df.apply(lambda x: 'U' if x['trendangle']>0 else 'D', axis=1)
+        df['trend'] = df.apply(lambda x: self.angletoTrend(x['trendangle']), axis=1)
 
         df.round({self.fOPEN:1, self.fVOLUME:0, "BBUpper":1, "BBMiddle":1, "BBLower":1, "SHORTEMA":1})
 
@@ -169,6 +188,15 @@ class CalcData():
 
         df = np.round(df, 2)
         return df
+    def angletoTrend(self, angle):
+        if angle<-7 :
+            return Trend.down
+        elif angle<7:
+            return Trend.sideways
+        else:
+            return Trend.up
+
+
 
 s="""
     def Insert(self):

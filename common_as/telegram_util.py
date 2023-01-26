@@ -6,10 +6,28 @@ Created on Sun Sep  5 12:18:03 2021
 """
 from cfg.config import Config
 import requests
+import json
 from datetime import datetime
 bot_token = '1989230682:AAH1QXpYlQzgcdrZZtcFPzbMZsWmpaRQL3U'
-def send(bot_message, freqtype = 'daily' ):
-    cfg = Config()
+cfg = Config()
+
+def send_msg(chat_id, bot_message):
+    if chat_id == '0':
+        print (f'chat_id ({chat_id}) is null')
+    if cfg.TESTING:
+        if str(chat_id) != cfg.test_telegram_id:
+            return False
+    send_text = f'https://api.telegram.org/bot{bot_token}/sendMessage?chat_id={chat_id}&parse_mode=Markdown&text={bot_message}'
+    response = requests.get(send_text)
+    j = json.loads(response.content.decode('utf-8'))
+    if not j['ok']:
+        print (f'There is an issue while sending telegram message: {j["description"]}')
+
+    #if response.content
+    return response.json()
+
+def send(bot_message, freqtype = 'daily'):
+
     if freqtype=='minutely':
         if cfg.TESTING:
             bot_chatIDs = ['-1001518732952'] #test
@@ -26,10 +44,10 @@ def send(bot_message, freqtype = 'daily' ):
 
     return response.json()
 
-def order_update(order):
+def order_update(telegram_id, order):
     buysell = 'Buy' if order.buysell == 'b' else 'Sell'
     msg = f'{buysell}:{order.symbol} Qty:{order.qty} Price:{order.price}'
-    send(msg, freqtype="minutely")
+    send_msg(telegram_id, msg)
 
 def eod_report(d, count, grossprofit, turnover):
     brokerage = count * 20
@@ -46,6 +64,11 @@ Net Profit: *{netprofit}*'''
     send(msg, freqtype="minutely")
     send(msg, freqtype="daily")
 
-if __name__=='__main__':    
-    eod_report(datetime.today(),8,  1535, 28827.5)
-    
+if __name__=='__main__':
+    #1112891310 - Siva
+    #1349483028 - Roopesh
+    #402285711 - Venkat
+    msg = 'Test message'
+
+    send_msg('1349483028', msg)
+    #eod_report(datetime.today(),8,  1535, 28827.5)
