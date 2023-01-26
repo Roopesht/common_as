@@ -96,7 +96,7 @@ class HelperKS( BaseHelper):
         #    return None
     
     def get_token_for_code(self, code):
-        tokens = [strike['kstoken'] in strike for strike in self.get_strikes() if strike['code'] == code]
+        tokens = [strike['kstoken'] for strike in self.get_strikes() if strike['code'] == code]
         if tokens is not None and len(tokens) > 0:
             return tokens[0]
 
@@ -160,6 +160,7 @@ class HelperKS( BaseHelper):
 
         order.ordtype = "N" if order.ordtype =='' else order.ordtype
         tran_type = "BUY" if order.buysell == BuySell.buy else "SELL"
+
         #print (f"token: {order.token}, quantity: {order.qty}, price: {order.price}, ordtype: {order.ordtype}, tran_type:{tran_type}")
         try:
             msg = self.client.place_order(
@@ -173,8 +174,6 @@ class HelperKS( BaseHelper):
             log_util.error('Error in executing the order: ', e)
             #TODO: log the error in orderlog_error
             #dalc.orderlog_error(self.userid, attime=datetime.now(), error=str(e))
-
-        
         return order
 
     def ModifyOrder(self, order_id,price, trigger_price=0):
@@ -253,7 +252,6 @@ class HelperKS( BaseHelper):
                 self.helper.cancel_if_exists(orderid)
                 return ORDER_STATUS.CANCELLED
             time.sleep(.9)
-
 
     def cancel_if_exists(self, orderid):
         try:

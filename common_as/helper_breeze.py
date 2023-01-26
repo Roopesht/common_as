@@ -1,6 +1,6 @@
 from ks_api_client import ks_api
 from io import StringIO 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import logging
 import os
 import pandas as  pd
@@ -11,11 +11,13 @@ import time
 import requests
 import json
 
-import common_as.date_util
 from common_as.base_helper import BaseHelper
+import common_as.date_util as date_util
 from common_as.levels import Order
 from common_as.calculate_ta import CalcData
 from common_as.levels import BuySell, ORDER_STATUS
+import common_as.util as util
+import common_as.log_util as log_util
 from common_as import file_util
 
 from breeze_connect import BreezeConnect
@@ -386,15 +388,7 @@ class HelperBreeze(BaseHelper):
         return data
 
     def CreateWebSocket(self, on_tick, on_connect=None, on_close=None, on_error=None, on_reconnect=None):
-        kws = KiteTicker(self.cred['apikey'], self.cred['accesstoken'])
-        kws.on_ticks = on_tick
-        kws.on_connect = on_connect
-        kws.on_reconnect = on_reconnect
-        kws.connect(threaded=True)
-        print("Createwebsocket successful")
-        self.kws = kws
-        print("Connection status: ", self.kws.is_connected())
-        return self.kws
+        pass
 
     def max_pain(self, data, range_from=0, range_to=500000):
         def get_val(row):
@@ -453,14 +447,6 @@ class HelperBreeze(BaseHelper):
                                 right="call",
                                 strike_price="18000")
 
-
-def testohlc(token):
-    helper = KiteHelper()
-    df = helper.fetchOHLC(token, 1, hours=24)
-    file = fileutil.getNamedTempFile('test.csv')
-    df.to_csv(file)
-
-
 if __name__ == '__main__':
     # testohlc(260105)
     helper = HelperBreeze(38)
@@ -474,7 +460,7 @@ if __name__ == '__main__':
     helper.place_order_internal(order, 1)
     print(datetime.now())
     chain = helper.optionchain(
-        'CNXBAN', dateUtil.get_nextday_of_week(datetime.today().date(), 4))
+        'CNXBAN', date_util.get_nextday_of_week(datetime.today().date(), 4))
     print(helper.get_vitals(chain))
     print(datetime.now())
     #a = [{k:v for (k,v) in c.items() if k in ('ltp', 'strike_price', 'right', 'open_interest')} for c in chain]

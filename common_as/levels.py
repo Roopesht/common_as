@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
-from common_as.calculate_ta import CalcData
 #import copy
 
 class ORDER_STATUS:
@@ -9,6 +8,18 @@ class ORDER_STATUS:
     CANCELLED= 'CANCELLED'
     REJECTED= 'REJECTED'
     TRIGGER_PENDING = 'TRIGGER PENDING'
+class Vitals:
+
+    underlying = 0
+    pcr = 0
+    maxpain = 0
+    trend_1m = None
+    trend_5m = None
+    trend_15m = None
+
+    pcr_trend = None
+    maxpain_trend = None
+
 
 class Order_pref:
     profit_perc = .03
@@ -108,17 +119,17 @@ class Position:
         """
 
 class Order :
-    exchangeToken: int=0
-    strategyid: int=0
-    code: int = 0
+    exchangeToken=0
+    strategyid=0
+    code = 0
     orderid=0
     symbol=''
-    token: int=0
+    token=0
     buysell=''
-    qty: int=0
-    pending_qty: int=0
-    price: float=0
-    trigger_price: float=0
+    qty=0
+    pending_qty=0
+    price=0
+    trigger_price=0
     at_time=None
     ordtype =''
     status=''
@@ -152,19 +163,43 @@ class Order :
         return ord
 
 class Trend:
-    up='U'
-    down = 'D'
-    sideways='S'
+    up='u'
+    down = 'd'
+    sideways='s'
+
+class Candle:
+    ubb,lbb, ema20 = 0,0,0
+
+
+
+class Strength:
+    weak=1
+    normal=2
+    strong = 3
+
+class Risk:
+    High=3
+    Low = 1
+    Normal=2
 
 class PositionStatus:
     isopen='O'
     isclosed='C'
 
 class Reco:
+    def to_string(self):
+        return f'buysell: {self.buysell}, direction: {self.direction}, id:{self.id} '
+
     def __init__(self, reco):
         self.reco=reco
-        s_code = reco['specific_code']
-        s_price = reco['specific_price']
+        if 'specific_code' in reco.keys():
+            s_code = reco['specific_code']
+        else:
+            s_code=''
+        if 'specific_price' in reco.keys():
+            s_price = reco['specific_price']
+        else:
+            s_price=0
         self.buysell=reco['buysell']
         self.direction = reco['direction']
         self.probability = reco['probability']
@@ -174,13 +209,17 @@ class Reco:
             self.code = int(s_code)
         else:
             self.code=0
-        self.close = reco['close']
+        if 'close' in reco.keys():
+            self.close = reco['close']
+        else:
+            self.close = 'n'
 
         if s_price != None and s_price != '':
             self.price = int(s_price )
         else:
             self.price=0
         self.probability=int(reco['probability'])
+        self.type = reco['type']
 
     def copy(self):
         return Reco(self.reco)
@@ -220,146 +259,3 @@ class BB:
         self.middle=middle
         self.top = top
 
-class Values:
-    token=0
-    trend={}
-    last_price=0
-    df_1=None
-    df_5=None
-    df_15=None
-    #ema_1m = {}
-    #ema_5m = {}
-    #ema_15m = {}
-    trend_ema20_1=Trend.sideways
-    trend_ema20_5=Trend.sideways
-    trend_ema20_15=Trend.sideways
-    trend_sma20_1=Trend.sideways
-    trend_ema7_1=Trend.sideways
-    angle_ema7_1=0
-    angle_ema20=0
-
-    sma20_1= 0
-    ema20_1 = 0
-    ema20_5 = 0
-    ohlcs=None
-    def __init__(self):
-        self.levels_up=[36240, 35490, 35580]
-        self.levels_down=[36140, 35200, 35100]
-    def calculate(self):
-        c=CalcData(1, 'BANKNIFTY', '2021-02-13', 234729489)
-
-        self.df_1=c.CalculateEMA(self.df_1)
-        row=self.df_1.iloc[-1]
-        #angle = row.slope_ema20_1
-        self.ema20_1= row.ema20
-        self.sma20_1= row.sma20
-        self.ema7_1= row.ema7
-        self.ema200_1 = row.ema200
-
-        self.angle_ema7_1 = row.slope_ema7
-        self.angle_ema20_1 = row.slope_ema20
-        self.angle_sma20_1 = row.slope_sma20
-
-        self.trend_ema7_1 = self.angletoTrend(row.slope_ema7)
-        self.trend_ema20_1 = self.angletoTrend(row.slope_ema20)
-        self.trend_sma20_1 = self.angletoTrend(row.slope_sma20)
-
-        self.ubb_1 = row.ubb
-        self.lbb_1 = row.lbb
-
-        self.touched_ema200 =  self.ema200_1 in range (int(self.df_1.tail(5).high.min()), int(self.df_1.tail(5).high.max()))
-        self.closer_to_mbb = True if (self.ubb_1 - self.ema7_1)/(self.ema7_1 - self.sma20_1)>2 else False
-
-        self.df_5=c.CalculateEMA(self.df_5)
-        row=self.df_5.iloc[-1]
-        self.ema20_5= row.ema20
-        self.trend_ema20_5 = self.angletoTrend( row.slope_ema20)
-
-        self.df_15=c.CalculateEMA(self.df_15)
-        row=self.df_5.iloc[-1]
-        self.ema20_15= row.ema20
-        self.trend_ema20_15 = self.angletoTrend( row.slope_ema20)
-
-    def __str__(self):
-        return "ema20_1: {} sma20_1: {} ema7_1: {} ema200_1: {} angle_ema7_1 : {} angle_ema20_1: {} angle_sma20_1: {} trend_ema7_1 : {} trend_ema20_1: {} trend_sma20_1: {} ubb_1 : {} lbb_1 : {} touched_ema200: {} closer_to_mbb: {} ema20_5: {} trend_ema20_5: {} ema20_15: {} trend_ema20_15: {}".format(self.ema20_1, self.sma20_1, self.ema7_1, self.ema200_1, self.angle_ema7_1 , self.angle_ema20_1, self.angle_sma20_1, self.trend_ema7_1 , self.trend_ema20_1, self.trend_sma20_1, self.ubb_1 , self.lbb_1 , self.touched_ema200, self.closer_to_mbb, self.ema20_5, self.trend_ema20_5, self.ema20_15, self.trend_ema20_15)
-
-    def angletoTrend(self, angle):
-        if angle<-7 :
-            return Trend.down
-        elif angle<7:
-            return Trend.sideways
-        else:
-            return Trend.up
-
-    def is_1min_up(self):
-        if (self.trend_ema20_1 == Trend.up):
-            return True
-        else:
-            return False
-
-    def is_1min_down(self):
-        if (self.trend_ema20_1 == Trend.down):
-            return True
-        else:
-            return False
-
-    def is_all_up(self):
-        if (self.trend_ema20_1 == self.trend_ema20_5) & (self.trend_ema20_5 == self.trend_ema20_15)  & (self.trend_ema20_1 == Trend.up):
-            return True
-        else:
-            return False
-
-    def is_all_up_except1(self):
-        if (self.trend_ema20_15 == self.trend_ema20_5 ) & (self.trend_ema20_15 == Trend.up):
-            return True
-        else:
-            return False
-
-    def is_all_up_except5(self):
-        if (self.trend_ema20_1 == self.trend_ema20_15)  & (self.trend_ema20_1 == Trend.up):
-            return True
-        else:
-            return False
-
-    def is_all_down(self):
-        if (self.trend_ema20_1 == self.trend_ema20_5) & (self.trend_ema20_5 == self.trend_ema20_15)  & (self.trend_ema20_1 == Trend.down):
-            return True
-        else:
-            return False
-
-    def is_all_down_except5(self):
-        if (self.trend_ema20_1 == self.trend_ema20_15)  & (self.trend_ema20_1 == Trend.down):
-            return True
-        else:
-            return False
-
-    def is_all_down_except1(self):
-        if (self.trend_ema20_15 == self.trend_ema20_5)  & (self.trend_ema20_15 == Trend.down):
-            return True
-        else:
-            return False
-
-class Vitals:
-
-    underlying = 0
-    pcr = 0
-    maxpain = 0
-    trend_1m = None
-    trend_5m = None
-    trend_15m = None
-
-    pcr_trend = None
-    maxpain_trend = None
-
-class Strength:
-    weak=1
-    normal=2
-    strong = 3
-
-class Risk:
-    High=3
-    Low = 1
-    Normal=2
-
-class Candle:
-    ubb,lbb, ema20 = 0,0,0
