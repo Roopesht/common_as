@@ -37,7 +37,7 @@ class HelperBreeze(BaseHelper):
     def get_strikes(self):
         if self._strikes is None:
             self._strikes = util.get_strikes(self.cfg)
-            requests.get(f'{self.cfg.d_server}/strikes', headers={'application': 'json'}).json()['response']
+            #requests.get(f'{self.cfg.d_server}/strikes', headers={'application': 'json'}).json()['response']
 
         return copy.copy( self._strikes)
 
@@ -298,11 +298,11 @@ class HelperBreeze(BaseHelper):
         o=[strike for strike in self.get_strikes() if strike['code']==code][0]
         right = 'Call' if o['pece'] == 'CE' else 'Put' if o['pece'] == 'PE' else ''
         product_type = 'options' if o['pece'] in ['CE', 'PE'] else 'cash'
-        
+        expiry = o['expiry']
         try:
-            expiry = o['expiry'].strftime("%Y-%m-%d")
+            expiry = expiry.strftime("%Y-%m-%d")
         except:
-            expiry = ''
+            pass
         params = {'stock_code': 'CNXBAN', 'exchange_code': o['exchange_code'],
                     'expiry_date': expiry, 'strike_price': o['strike'], 'right': right, 'product_type': product_type}
         return params
@@ -375,7 +375,8 @@ class HelperBreeze(BaseHelper):
             c = CalcData(1, 'BANKNIFTY', '2021-02-13', 234729489)
             data = c.CalculateEMA(data)
             if token == 1:
-                data.to_csv(f'{token}_{interval}.csv')
+                file_name = file_util.getNamedTempFile(f'{token}_{interval}.csv')
+                data.to_csv(file_name)
                 #print (f'Data after calculate ema: {token}', data[['date', 'open', 'close', 'ubb', 'lbb', 'sma20']])
         return data
 
@@ -448,7 +449,6 @@ class HelperBreeze(BaseHelper):
                                 strike_price="18000")
 
 if __name__ == '__main__':
-    # testohlc(260105)
     helper = HelperBreeze(38)
     helper.get_ltp(1)
     data = helper.historical_data(1, datetime(
