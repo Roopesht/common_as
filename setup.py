@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='common_as',
-    version='1.1.0',
+    version='1.3.0',
     description='common modules used in Arthasangraha suite of projects',
     author='Arthasangraha',
     author_email='roopesh@arthasangraha.com',

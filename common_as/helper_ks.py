@@ -129,11 +129,17 @@ class HelperKS( BaseHelper):
             return -1
     def get_ltp(self, code):
         try :
+            ltp = 0
             #TODO: Fix this issue
             token = [strike[self.token_field] for strike in self.get_strikes() if strike['code'] == code]
-            self.client.quote(token)
+            token = token[0] if len(token) > 0 else 0
+
+            quote = self.client.quote(token)
+            if 'success' in quote:
+                ltp  = quote['success'][0]['ltp']
+            return ltp
         except:
-            return 1
+            return 0
 
     def getToken(self, symbol, pece, strikeprice, expirydate):
         """Looks up instrument token for a given script from instrument dump"""
