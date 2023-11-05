@@ -228,6 +228,7 @@ class HelperBreeze(BaseHelper):
             ret.extend(ce['Success'])
             ret.extend(pe['Success'])
         except:
+            print (f'Error in getting option chain: {e}')
             ret = None
         return ret
 
